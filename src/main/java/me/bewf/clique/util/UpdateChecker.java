@@ -5,12 +5,12 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import me.bewf.clique.CliqueMod;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.text.ClickEvent;
-import net.minecraft.text.HoverEvent;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.HoverEvent;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.ChatFormatting;
 
 import java.net.URI;
 import java.net.URLEncoder;
@@ -61,10 +61,10 @@ public final class UpdateChecker {
                     return;
                 }
 
-                MinecraftClient.getInstance().execute(() -> {
-                    MinecraftClient mc = MinecraftClient.getInstance();
+                Minecraft.getInstance().execute(() -> {
+                    Minecraft mc = Minecraft.getInstance();
                     if (mc.player == null) return;
-                    mc.player.sendMessage(buildMessage(projectSlug, displayName, latest, currentVersion), false);
+                    mc.player.sendSystemMessage(buildMessage(projectSlug, displayName, latest, currentVersion));
                     updateMessageSent = true;
                 });
 
@@ -150,22 +150,24 @@ public final class UpdateChecker {
         return out;
     }
 
-    private static Text buildMessage(String slug, String displayName, String latest, String current) {
+    private static Component buildMessage(String slug, String displayName, String latest, String current) {
         String url = "https://modrinth.com/mod/" + slug + "/versions";
 
-        MutableText link = Text.literal(" ▶ Click to download")
-                .formatted(Formatting.LIGHT_PURPLE, Formatting.BOLD)
-                .styled(s -> s
-                        .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, url))
-                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                                Text.literal("Open Modrinth versions page").formatted(Formatting.LIGHT_PURPLE)))
+        MutableComponent link = Component.literal(" ▶ Click to download")
+                .withStyle(ChatFormatting.LIGHT_PURPLE)
+                .withStyle(ChatFormatting.BOLD)
+                .withStyle(style -> style
+                        .withClickEvent(new ClickEvent.OpenUrl(URI.create(url)))
+                        .withHoverEvent(new HoverEvent.ShowText(
+                                Component.literal("Open Modrinth versions page")
+                                        .withStyle(ChatFormatting.LIGHT_PURPLE)))
                 );
 
-        return Text.literal("[" + displayName + "] ").formatted(Formatting.AQUA)
-                .append(Text.literal("Update available: ").formatted(Formatting.YELLOW))
-                .append(Text.literal(latest).formatted(Formatting.GOLD))
-                .append(Text.literal(" (you have " + current + ")").formatted(Formatting.YELLOW))
-                .append(Text.literal("\n"))
+        return Component.literal("[" + displayName + "] ").withStyle(ChatFormatting.AQUA)
+                .append(Component.literal("Update available: ").withStyle(ChatFormatting.YELLOW))
+                .append(Component.literal(latest).withStyle(ChatFormatting.GOLD))
+                .append(Component.literal(" (you have " + current + ")").withStyle(ChatFormatting.YELLOW))
+                .append(Component.literal("\n"))
                 .append(link);
     }
 }

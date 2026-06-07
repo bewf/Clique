@@ -15,9 +15,7 @@
 	"icon": "assets/clique/icon.png",
 	"environment": "*",
 	"entrypoints": {
-		"main": [
-			"me.bewf.clique.Clique"
-		]
+		"client": ["me.bewf.clique.CliqueMod"]
 	},
 	"mixins": [
 		"clique.mixins.json"
