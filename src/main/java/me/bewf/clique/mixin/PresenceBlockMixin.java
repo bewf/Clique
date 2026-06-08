@@ -1,19 +1,23 @@
 package me.bewf.clique.mixin;
 
 import com.mojang.authlib.yggdrasil.YggdrasilFriendsService;
+import com.mojang.authlib.yggdrasil.response.PresenceStatus;
+import me.bewf.clique.CliqueMod;
 import me.bewf.clique.userstate.UserStateManager;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
-@Mixin(YggdrasilFriendsService.class)
+@Mixin(value = YggdrasilFriendsService.class, remap = false)
 public class PresenceBlockMixin {
 
-    @Inject(method = "presence", at = @At("HEAD"), cancellable = true)
-    private void blockPresence(String status, CallbackInfo ci) {
+    @ModifyVariable(method = "presence", at = @At("HEAD"), argsOnly = true, remap = false)
+    private String forcePresenceStatus(String status) {
         if (UserStateManager.isOffline()) {
-            ci.cancel();
+            CliqueMod.LOGGER.info("[Clique] Presence intercepted: {} → OFFLINE", status);
+            return PresenceStatus.OFFLINE.name();
         }
+        CliqueMod.LOGGER.info("[Clique] Presence passthrough: {}", status);
+        return status;
     }
 }
