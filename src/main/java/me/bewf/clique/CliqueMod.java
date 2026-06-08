@@ -27,5 +27,8 @@ public class CliqueMod implements ClientModInitializer {
 	public void onInitializeClient() {
 		LOGGER.info("Clique {} initializing", VERSION);
 		UpdateCheckListener.register();
+		net.fabricmc.fabric.api.client.screen.v1.ScreenEvents.AFTER_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
+			LOGGER.info("[Clique] Screen: {}", screen.getClass().getName());
+		});
 	}
 }
