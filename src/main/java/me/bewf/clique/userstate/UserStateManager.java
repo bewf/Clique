@@ -1,26 +1,32 @@
 package me.bewf.clique.userstate;
 
-public class UserStateManager {
-
-    private static UserState state = UserState.NORMAL;
+public final class UserStateManager {
 
     public static UserState getState() {
-        return state;
+        return UserStateToggle.get();
     }
 
-    public static void setState(UserState newState) {
-        state = newState;
+    public static void setState(UserState state) {
+        UserStateToggle.set(state);
     }
 
     public static boolean isOffline() {
-        return state == UserState.OFFLINE;
+        return UserStateToggle.is(UserState.OFFLINE);
     }
 
     public static boolean isDnd() {
-        return state == UserState.DND;
+        return UserStateToggle.is(UserState.DND);
     }
 
     public static boolean isNormal() {
-        return state == UserState.NORMAL;
+        return UserStateToggle.is(UserState.NORMAL);
+    }
+
+    public static void toggleOffline() {
+        UserStateToggle.toggleOffline();
+    }
+
+    public static void toggleDnd() {
+        UserStateToggle.toggleDnd();
     }
 }

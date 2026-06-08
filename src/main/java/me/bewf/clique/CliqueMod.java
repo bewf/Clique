@@ -30,7 +30,10 @@ public class CliqueMod implements ClientModInitializer {
 
 		UpdateCheckListener.register();
 
-		// state flag only (does nothing until mixins use it)
-		UserStateManager.setState(UserState.OFFLINE);
+		UserStateManager.setState(UserState.NORMAL);
+
+		me.bewf.clique.input.Keybinds.register();
+
+		me.bewf.clique.debug.PresenceDebugLogger.spamLog();
 	}
 }

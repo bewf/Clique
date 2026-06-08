@@ -17,7 +17,6 @@ public final class PresenceDebugLogger {
         System.out.println("[Clique] Incoming: " + manager.getIncomingRequests().size());
         System.out.println("[Clique] Outgoing: " + manager.getOutgoingRequests().size());
 
-        // presence enum just for reference
         System.out.println("[Clique] Presence enum sample: " + PresenceStatus.OFFLINE);
     }
 
@@ -26,7 +25,8 @@ public final class PresenceDebugLogger {
             while (true) {
                 try {
                     logState();
-                    Thread.sleep(3000);
+                    System.out.println("[Clique] Offline mode: " + me.bewf.clique.userstate.UserStateManager.isOffline());
+                    Thread.sleep(2000);
                 } catch (InterruptedException ignored) {}
             }
         }, "Clique-Debug").start();
