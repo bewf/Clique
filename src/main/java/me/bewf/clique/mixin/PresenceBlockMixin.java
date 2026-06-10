@@ -12,12 +12,11 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 public class PresenceBlockMixin {
 
     @ModifyVariable(method = "presence", at = @At("HEAD"), argsOnly = true, remap = false)
-    private String forcePresenceStatus(String status) {
+    private String clique$interceptPresence(String status) {
         if (UserStateManager.isOffline()) {
-            CliqueMod.LOGGER.info("[Clique] Presence intercepted: {} → OFFLINE", status);
-            return PresenceStatus.OFFLINE.name();
+            CliqueMod.LOGGER.info("[Clique] Presence blocked: {} → OFFLINE", status);
+            return PresenceStatus.OFFLINE.name(); // OFFLINE
         }
-        CliqueMod.LOGGER.info("[Clique] Presence passthrough: {}", status);
-        return status;
+        return status; // DND doesn't
     }
 }

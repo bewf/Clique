@@ -32,8 +32,6 @@ public class CliqueMod implements ClientModInitializer {
 
 		UserStateManager.setState(UserState.NORMAL);
 
-		me.bewf.clique.input.Keybinds.register();
-
 		me.bewf.clique.debug.PresenceDebugLogger.spamLog();
 	}
 }
