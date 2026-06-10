@@ -21,36 +21,33 @@ public abstract class FriendsScreenMixin extends Screen {
 
     protected FriendsScreenMixin(Component title) { super(title); }
 
-    //
     @Unique private static final int PANEL_WIDTH = 264;
-    @Unique private static final int PROFILE_Y   = 79;  // bump ±2 if misaligned
-    @Unique private static final int POPUP_W     = 130;
-    @Unique private static final int POPUP_H     = 12;
+    @Unique private static final int PROFILE_Y   = 79;
     @Unique private static final int PADDING     = 5;
+    @Unique private static final int ITEM_GAP    = 2;
 
-    @Unique private StatusDotWidget  cliqueStatusDot;
-    @Unique private List<Button>     cliquePopupOptions;
-    @Unique private boolean          cliquePopupOpen = false;
+    @Unique private StatusDotWidget  cliquePresenceBtn;
+    @Unique private List<Button>     cliquePopupBtns   = new ArrayList<>();
+    @Unique private List<UserState>  cliquePopupStates = new ArrayList<>();
+    @Unique private boolean          cliquePopupOpen   = false;
+    @Unique private int              cliquePopupStartY;
 
     @Inject(method = "init()V", at = @At("TAIL"))
     private void clique$init(CallbackInfo ci) {
         cliquePopupOpen = false;
-        if (cliquePopupOptions == null) cliquePopupOptions = new ArrayList<>();
-        else cliquePopupOptions.clear();
+        cliquePopupBtns.clear();
+        cliquePopupStates.clear();
 
         final int panelRight = (this.width + PANEL_WIDTH) / 2;
-        final int dotX = panelRight - StatusDotWidget.DISPLAY_SIZE - PADDING;
-        final int dotY = PROFILE_Y;
+        final int btnX       = panelRight - StatusDotWidget.BTN_W - PADDING;
 
-        cliqueStatusDot = new StatusDotWidget(dotX, dotY, () -> {
+        cliquePresenceBtn = new StatusDotWidget(btnX, PROFILE_Y, () -> {
             cliquePopupOpen = !cliquePopupOpen;
             clique$syncPopup();
         });
-        addRenderableWidget(cliqueStatusDot);
+        addRenderableWidget(cliquePresenceBtn);
 
-        // Popup drops below the dot, right-aligned with it
-        final int popupX = dotX + StatusDotWidget.DISPLAY_SIZE - POPUP_W;
-        final int popupStartY = dotY + StatusDotWidget.DISPLAY_SIZE + 2;
+        cliquePopupStartY = PROFILE_Y + StatusDotWidget.BTN_H + ITEM_GAP;
 
         record Opt(String label, UserState state) {}
         var opts = List.of(
@@ -59,21 +56,32 @@ public abstract class FriendsScreenMixin extends Screen {
                 new Opt("⊘ Do Not Disturb", UserState.DND)
         );
 
-        for (int i = 0; i < opts.size(); i++) {
-            final Opt opt = opts.get(i);
+        for (Opt opt : opts) {
             Button btn = Button.builder(Component.literal(opt.label()), b -> {
                 UserStateManager.setState(opt.state());
+                cliquePresenceBtn.syncLabel();
                 cliquePopupOpen = false;
                 clique$syncPopup();
-            }).bounds(popupX, popupStartY + i * (POPUP_H + 2), POPUP_W, POPUP_H).build();
+            }).bounds(btnX, cliquePopupStartY, StatusDotWidget.BTN_W, StatusDotWidget.BTN_H).build();
             btn.visible = false;
-            cliquePopupOptions.add(btn);
+            cliquePopupBtns.add(btn);
+            cliquePopupStates.add(opt.state());
             addRenderableWidget(btn);
         }
     }
 
     @Unique
     private void clique$syncPopup() {
-        cliquePopupOptions.forEach(b -> b.visible = cliquePopupOpen);
+        UserState current = UserStateManager.getState();
+        int y = cliquePopupStartY;
+        for (int i = 0; i < cliquePopupBtns.size(); i++) {
+            Button btn   = cliquePopupBtns.get(i);
+            boolean show = cliquePopupOpen && cliquePopupStates.get(i) != current;
+            btn.visible  = show;
+            if (show) {
+                btn.setY(y);
+                y += StatusDotWidget.BTN_H + ITEM_GAP;
+            }
+        }
     }
 }

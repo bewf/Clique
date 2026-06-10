@@ -2,52 +2,45 @@ package me.bewf.clique.gui;
 
 import me.bewf.clique.userstate.UserStateManager;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.components.AbstractButton;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.input.InputWithModifiers;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
 
-public class StatusDotWidget extends AbstractWidget {
+public class StatusDotWidget extends AbstractButton {
 
-    private static final Identifier TEX_ONLINE  = Identifier.of("clique", "textures/gui/online.png");
-    private static final Identifier TEX_OFFLINE = Identifier.of("clique", "textures/gui/offline.png");
-    private static final Identifier TEX_DND     = Identifier.of("clique", "textures/gui/dnd.png");
-
-    public static final int DISPLAY_SIZE = 32;
-    private static final int TEX_SIZE    = 512;
+    public static final int BTN_W = 110;
+    public static final int BTN_H = 14;
 
     private final Runnable onToggle;
 
     public StatusDotWidget(int x, int y, Runnable onToggle) {
-        super(x, y, DISPLAY_SIZE, DISPLAY_SIZE, Component.empty());
+        super(x, y, BTN_W, BTN_H, stateLabel());
         this.onToggle = onToggle;
     }
 
     @Override
-    public void extractWidgetRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
-        if (!this.visible) return;
-        float scale = (float) DISPLAY_SIZE / TEX_SIZE;
-        var pose = graphics.pose();
-        pose.pushPose();
-        pose.translate(getX(), getY(), 0f);
-        pose.scale(scale, scale, 1f);
-        graphics.blit(currentTex(), 0, 0, 0, 0, TEX_SIZE, TEX_SIZE, TEX_SIZE, TEX_SIZE);
-        pose.popPose();
+    protected void extractContents(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float pt) {
+        extractDefaultSprite(graphics);
     }
 
     @Override
-    protected void onClick(double mouseX, double mouseY) {
+    public void onPress(InputWithModifiers input) {
         onToggle.run();
+    }
+
+    public void syncLabel() {
+        setMessage(stateLabel());
+    }
+
+    static Component stateLabel() {
+        return Component.literal(switch (UserStateManager.getState()) {
+            case OFFLINE -> "◌ Appear Offline";
+            case DND     -> "⊘ Do Not Disturb";
+            default      -> "● Online";
+        });
     }
 
     @Override
     protected void updateWidgetNarration(NarrationElementOutput output) {}
-
-    private Identifier currentTex() {
-        return switch (UserStateManager.getState()) {
-            case OFFLINE -> TEX_OFFLINE;
-            case DND     -> TEX_DND;
-            default      -> TEX_ONLINE;
-        };
-    }
 }
